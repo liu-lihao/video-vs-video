@@ -1,0 +1,30 @@
+.uploadInput {
+  &__iconAdd {
+    color: #aaa;
+  }
+  &:hover &__iconAdd {
+    color: #ddd;
+  }
+}
+
+.immediatelyBlink {
+  animation: immediatelyBlink 0.5s infinite;
+}
+
+@keyframes immediatelyBlink {
+  0% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
