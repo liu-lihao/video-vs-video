@@ -7,6 +7,16 @@
   }
 }
 
+.pageTitle {
+  &__iconGithub {
+    opacity: 0;
+    transition: opacity 0.26s;
+  }
+  &:hover &__iconGithub {
+    opacity: 1;
+  }
+}
+
 .immediatelyBlink {
   animation: immediatelyBlink 0.5s infinite;
 }

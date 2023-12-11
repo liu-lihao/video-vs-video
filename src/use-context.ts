@@ -1,4 +1,4 @@
-import { inject, onBeforeUnmount, provide, shallowReactive } from "vue"
+import { inject, onBeforeUnmount, provide, reactive, shallowReactive } from "vue"
 
 const createEvent = () => {
   const obj: Record<string, Function[]> = {}
@@ -41,31 +41,36 @@ const createEvent = () => {
 export const useContext = () => {
   const events = createEvent()
 
-  const createHandler = (uid: number) => {
-    const handleStart = () => {
-      if (context.uid !== uid) {
-        return
-      }
-      context.startCount++
-      context.startTime = Date.now()
-    }
-    const handleEnd = () => {
-      if (context.uid !== uid) {
-        return
-      }
-      context.startCount--
-      if (!context.startCount) {
-        events.emit('full-end')
-      }
-    }
-    return { handleStart, handleEnd }
-  }
+  const createItem = () => ({
+    endTime: 0,
+    range: [0, 100],
+    duration: 0,
+  })
 
   const context = shallowReactive({
-    uid: 0,
-    updateUid: () => (context.uid = Date.now() + Math.random()),
+    refer: 0, // 作为参考显示上升或下降的 item
     startTime: 0,
-    startCount: 0,
+    endTime: 0,
+    items: reactive([createItem(), createItem()]),
+    updateRange(i: number, v: [number, number]) {
+      const items = context.items
+      items[i].range[0] = v[0]
+      items[i].range[1] = v[1]
+    },
+    updateEndTime(i: number, v: number) {
+      const items = context.items
+      items[i].endTime = v
+      const hasVideoItems = items.filter(n => n.duration)
+      const allEnd = hasVideoItems.every(n => n.endTime)
+      if (allEnd) {
+        events.emit('full-end')
+        context.endTime = Date.now()
+      }
+    },
+    updateDuration(i: number, v: number) {
+      context.items[i].duration = v
+      context.tapReset()
+    },
     onStart(fn: Function) {
       events.on('start', fn)
       return () => events.off('start', fn)
@@ -79,18 +84,34 @@ export const useContext = () => {
       return () => events.off('full-end', fn)
     },
     tapStart() {
-      context.startCount = 0
-      context.startTime = 0
-      const uid = context.updateUid()
-      const { handleStart, handleEnd } = createHandler(uid)
-      events.emit('start', handleStart, handleEnd)
+      const items = context.items
+      if (!items.some(n => n.duration)) {
+        return
+      }
+      items.forEach(n => {
+        n.endTime = 0
+      })
+      context.startTime = Date.now()
+      context.endTime = 0
+      events.emit('start')
     },
     tapReset() {
-      context.startCount = 0
+      const items = context.items
       context.startTime = 0
-      context.updateUid()
+      context.endTime = 0
+      items.forEach(n => {
+        n.endTime = 0
+      })
       events.emit('reset')
     },
+    addItem() {
+      context.items.push(createItem())
+      context.tapReset()
+    },
+    removeItem(i: number) {
+      context.items.splice(i, 1)
+      context.tapReset()
+    }
   })
 
   onBeforeUnmount(() => events.clear())

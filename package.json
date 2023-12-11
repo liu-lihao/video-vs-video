@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "naive-ui": "^2.35.0",
     "vue": "^3.3.8"
   },
   "devDependencies": {

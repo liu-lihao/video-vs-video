@@ -1,9 +1,9 @@
 import { onBeforeUnmount, ref } from "vue";
 
 export const timeToShowNumbers = (time: number) => {
-  const s = Math.floor(time / 1000);
-  const ms = Math.floor((time % (1000)) / 10)
-  return [s,':', ms].map(n => n === ':' ? ':' : n.toString().padStart(2, '0').split('').map(n => Number(n))).flat(1)
+  const s = Math.floor(time / 1000).toString().padStart(2, '0').split('').map(n => Number(n))
+  const ms = Math.floor((time % (1000))).toString().padStart(3, '0').split('').map(n => Number(n))
+  return [...s,':', ...ms] as (number | ':')[]
 }
 
 export const useEffect = (callback: Function) => {
